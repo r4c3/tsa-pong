@@ -20,17 +20,17 @@ p = pygame.font.Font("assets/ebm.ttf", 42)
 
 #sfx init
 mario_1 = pygame.mixer.Sound("assets/sfx/mario_ueh.wav")
-mario_1.set_volume(0.04)
+mario_1.set_volume(0.07)
 mario_2 = pygame.mixer.Sound("assets/sfx/mario_uhn.wav")
-mario_2.set_volume(0.04)
+mario_2.set_volume(0.07)
 mario_3 = pygame.mixer.Sound("assets/sfx/mario_wah.wav")
-mario_3.set_volume(0.04)
+mario_3.set_volume(0.07)
 mario_4 = pygame.mixer.Sound("assets/sfx/mario_yah.wav")
-mario_4.set_volume(0.04)
+mario_4.set_volume(0.07)
 mario_5 = pygame.mixer.Sound("assets/sfx/mario_yahh.wav")
-mario_5.set_volume(0.04)
+mario_5.set_volume(0.07)
 mario_6 = pygame.mixer.Sound("assets/sfx/mario_yahoo.wav")
-mario_6.set_volume(0.04)
+mario_6.set_volume(0.07)
 press_start = pygame.mixer.Sound("assets/sfx/press_start.wav")
 
 #color init
@@ -47,7 +47,7 @@ def Main_Menu():
     song_number = random.randint(0, len(songs) - 1)
     random.shuffle(songs)
     pygame.mixer.music.load("assets/music/" + songs[song_number])
-    pygame.mixer.music.set_volume(0.03)
+    pygame.mixer.music.set_volume(0.1)
     pygame.mixer.music.play(1)
     for index, song in enumerate(songs):
         if index == song_number:
@@ -85,7 +85,7 @@ def Main_Menu():
 
     center_text_1 = p.render("gameplay:", True, white)
     center_text_1_rect = center_text_1.get_rect(center=(screen_width / 2, 370))
-    center_text_2 = p.render("first to 11 wins", True, white)
+    center_text_2 = p.render("first to 5 wins", True, white)
     center_text_2_rect = center_text_2.get_rect(center=(screen_width / 2, 410))
     center_text_3 = p.render("both players hit their up buttons to start next point", True, white)
     center_text_3_rect = center_text_3.get_rect(center=(screen_width / 2, 450))
@@ -138,8 +138,9 @@ def Main_Menu():
         clock.tick(tick_rate)
 
 def Game():
+    global ball_velocity_x, ball_velocity_y
     game = True
-    pygame.mixer.music.set_volume(0.008)
+    pygame.mixer.music.set_volume(0.05)
 
     #score init
     left_player_score = 0
@@ -149,7 +150,7 @@ def Game():
     ball = pygame.image.load("assets/sprites/miller.png") #pygame.Rect(screen_width / 2 - 15, screen_height / 15 - 12, 30, 30)
     ball = pygame.transform.scale(ball, (50, 50))
     ball_rect = ball.get_rect()
-
+    ball_rect.center = (screen_width / 2, screen_height / 2)
 
     left_player = pygame.Rect(12, screen_height / 2 - 57, 24, 114)
     right_player = pygame.Rect(screen_width - 36, screen_height / 2 - 57, 24, 114)
@@ -165,16 +166,16 @@ def Game():
     right_score_value_rect = right_score_value.get_rect(center=(screen_width - 220 + 150, 32))
 
     #physics init
-    ball_velocity_x = random.choice([4, -4])
-    ball_velocity_y = random.choice([4, -4])
+    ball_velocity_x = random.choice([3, -3])
+    ball_velocity_y = random.choice([3, -3])
     left_player_velocity_y = 0
     right_player_velocity_y = 0
 
     def resetBall():
         global ball_velocity_x, ball_velocity_y
         ball_rect.center = (screen_width / 2, screen_height / 2)
-        ball_velocity_x = random.choice([4, -4])
-        ball_velocity_y = random.choice([4, -4])
+        ball_velocity_x = random.choice([3, -3])
+        ball_velocity_y = random.choice([3, -3])
 
     #game loop
     while game:
@@ -185,22 +186,22 @@ def Game():
                 sys.exit()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_q:
-                    left_player_velocity_y -= 5
+                    left_player_velocity_y -= 4.7
                 if event.key == pygame.K_a:
-                    left_player_velocity_y += 5
+                    left_player_velocity_y += 4.7
                 if event.key == pygame.K_p:
-                    right_player_velocity_y -= 5
+                    right_player_velocity_y -= 4.7
                 if event.key == pygame.K_SEMICOLON:
-                    right_player_velocity_y += 5
+                    right_player_velocity_y += 4.7
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_q:
-                    left_player_velocity_y += 5
+                    left_player_velocity_y += 4.7
                 if event.key == pygame.K_a:
-                    left_player_velocity_y -= 5
+                    left_player_velocity_y -= 4.7
                 if event.key == pygame.K_p:
-                    right_player_velocity_y += 5
+                    right_player_velocity_y += 4.7
                 if event.key == pygame.K_SEMICOLON:
-                    right_player_velocity_y -= 5
+                    right_player_velocity_y -= 4.7
 
 
         #apply player velocities
@@ -232,8 +233,8 @@ def Game():
             resetBall()
         if ball_rect.colliderect(left_player) or ball_rect.colliderect(right_player):
             random.choice([mario_1, mario_2, mario_3, mario_4, mario_5, mario_6]).play()
-            ball_velocity_x *= -1
-            ball_velocity_y += random.choice([-0.3, 0.4, 2, 0.55, 0.2, -0.1, 0])
+            ball_velocity_x *= -1 * random.choice([1.03, .98, .91, 1.14, 1.02, 1.16, .914, 1.13, 1.24])
+            ball_velocity_y = 3 + random.choice([1, 2, 3, 4, 5])
 
         #update score counters
         right_score_value = p.render(str(right_player_score), True, white)
