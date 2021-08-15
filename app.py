@@ -45,6 +45,8 @@ pokeup = pygame.mixer.Sound("assets/sfx/pokeup.wav")
 pokeup.set_volume(0.07)
 clank = pygame.mixer.Sound("assets/sfx/clank.wav")
 clank.set_volume(0.12)
+hiclank = pygame.mixer.Sound("assets/sfx/hiclank.wav")
+hiclank.set_volume(0.12)
 
 #color init
 grey = pygame.Color(22, 22, 22)
@@ -238,7 +240,10 @@ def Game():
         #check and enforce ball collisions
         if ball_rect.top <= 0 or ball_rect.bottom >= screen_height:
             ball_velocity_y *= -1
-            clank.play()
+            if ball_velocity_y > 0:
+                clank.play()
+            else:
+                hiclank.play()
         if ball_rect.left <= 0:
             right_player_score += 1
             random.choice([cash, groan, mariup, mcup, pokeup]).play()
