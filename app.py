@@ -17,6 +17,7 @@ pygame.display.set_icon(windowIcon)
 
 #font init
 huge = pygame.font.Font("assets/ebm.ttf", 300)
+large = pygame.font.Font("assets/ebm.ttf", 150)
 h1 = pygame.font.Font("assets/ebm.ttf", 90)
 h3 = pygame.font.Font("assets/ebm.ttf", 62)
 p = pygame.font.Font("assets/ebm.ttf", 42)
@@ -60,6 +61,10 @@ grey = pygame.Color(22, 22, 22)
 blue = pygame.Color(64, 125, 220) #(0, 45, 114)
 red = pygame.Color(203, 44, 48)
 white = pygame.Color(245, 245, 245)
+
+#wins tracking init
+player_1_wins = 0
+player_2_wins = 0
 
 main_menu, game = True, False
 
@@ -239,6 +244,17 @@ def Game():
 
     #game loop
     while game:
+
+        #win conditions
+        if left_player_score >= 7:
+            global player_1_wins
+            player_1_wins += 1
+            Winner(True)
+        if right_player_score >= 7:
+            global player_2_wins
+            player_2_wins += 1
+            Winner(False)
+
         #user input
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -358,4 +374,87 @@ def Game():
         #render frame
         pygame.display.flip()
         dt = clock.tick(tick_rate)
+
+def Winner(blueWon):
+    global music_paused, player_1_wins, player_2_wins
+    winner = True
+
+    #colors & id init
+    if blueWon:
+        player_color = blue
+        player_id = "1"
+    else:
+        player_color = red
+        player_id = "2"
+    color = player_color
+    old_color = white
+
+    #timers init
+    pygame.time.set_timer(pygame.USEREVENT, 600)
+    dt = 0
+    escape_timer = 0
+
+    #objects init
+    winner_text = large.render("PLAYER " + player_id + " WINS!", True, grey)
+    winner_text_rect = winner_text.get_rect(center=(screen_width / 2, screen_height / 2 - 70))
+
+    leave_text = p.render("double tap \"esc\" to play again", True, grey)
+    leave_text_rect = leave_text.get_rect(center=(screen_width / 2, 400))
+    
+    wins_text_1 = p.render("player 1 has won " + str(player_1_wins) + " games this session", True, grey)
+    wins_text_1_rect = wins_text_1.get_rect(center=(screen_width / 2, 440))
+
+    wins_text_2 = p.render("player 2 has won " + str(player_2_wins) + " games this session", True, grey)
+    wins_text_2_rect = wins_text_2.get_rect(center=(screen_width / 2, 480))
+
+
+    #main menu loop
+    while winner:
+        #user input
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            # if event.type == pygame.MOUSEBUTTONDOWN:
+            #     if event.button == 1:
+            #         if start_button.collidepoint(event.pos):
+            #             Game()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_m:
+                    if music_paused:
+                        pygame.mixer.music.unpause()
+                        music_paused = False
+                    else:
+                        music_paused = True
+                        pygame.mixer.music.pause()
+                if event.key == pygame.K_ESCAPE:
+                    if escape_timer == 0:
+                        escape_timer = 0.001
+                    elif escape_timer < 1100:
+                        pygame.mixer.pause()
+                        Main_Menu()
+            if event.type == pygame.USEREVENT:
+                if color == old_color:
+                    color = player_color
+                elif color == player_color:
+                    color = old_color
+            
+        #increment escape key timer
+        if not escape_timer == 0:
+            escape_timer += dt
+            if escape_timer > 1100:
+                escape_timer = 0
+
+        #draw frame
+        screen.fill(color)
+        screen.blit(winner_text, winner_text_rect)
+        screen.blit(leave_text, leave_text_rect)
+        screen.blit(wins_text_1, wins_text_1_rect)
+        screen.blit(wins_text_2, wins_text_2_rect)
+
+        #render frame
+        pygame.display.flip()
+        dt = clock.tick(tick_rate)
+
+Winner(True)
 Main_Menu()
