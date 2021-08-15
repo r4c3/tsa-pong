@@ -1,5 +1,7 @@
 import pygame, sys, random
 
+from pygame import time
+
 #pygame init
 pygame.init()
 clock = pygame.time.Clock()
@@ -9,11 +11,12 @@ tick_rate = 144
 screen_width = 1140
 screen_height = 820
 screen = pygame.display.set_mode((screen_width, screen_height))
-pygame.display.set_caption("HCTSA Pong")
+pygame.display.set_caption("HCHS TSA PONG")
 windowIcon = pygame.image.load("assets/img/icon.png")
 pygame.display.set_icon(windowIcon)
 
 #font init
+huge = pygame.font.Font("assets/ebm.ttf", 300)
 h1 = pygame.font.Font("assets/ebm.ttf", 90)
 h3 = pygame.font.Font("assets/ebm.ttf", 62)
 p = pygame.font.Font("assets/ebm.ttf", 42)
@@ -47,6 +50,10 @@ clank = pygame.mixer.Sound("assets/sfx/clank.wav")
 clank.set_volume(0.12)
 hiclank = pygame.mixer.Sound("assets/sfx/hiclank.wav")
 hiclank.set_volume(0.12)
+countdown_chime = pygame.mixer.Sound("assets/sfx/321.wav")
+countdown_chime.set_volume(0.03)
+
+music_paused = False
 
 #color init
 grey = pygame.Color(22, 22, 22)
@@ -57,6 +64,9 @@ white = pygame.Color(245, 245, 245)
 main_menu, game = True, False
 
 def Main_Menu():
+    global music_paused
+    start_time = pygame.time.get_ticks()
+
     #music init
     songs = ["accordion.wav", "curls.wav", "deepfriedfrenz.wav", "supervillaintheme.wav", "knishes.wav", "caniwatch.wav", "crime.wav", "mariotheme.wav", "mega.wav", "peach.wav", "scottie.wav", "slider.wav", "stranger.wav", "zero.wav"]
     song_number = random.randint(0, len(songs) - 1)
@@ -68,7 +78,11 @@ def Main_Menu():
         if index == song_number:
             continue
         pygame.mixer.music.queue("assets/music/" + song)
-    
+
+    #timers init
+    time_since_last_reminder = 0
+    dt = 0
+
     #objects init
     title = h1.render("HCHS TSA PONG", True, white)
     title_rect = title.get_rect(center=(screen_width / 2, 80))
@@ -104,9 +118,9 @@ def Main_Menu():
     center_text_2_rect = center_text_2.get_rect(center=(screen_width / 2, 410))
     center_text_3 = p.render("both players hit their up buttons to start next point", True, white)
     center_text_3_rect = center_text_3.get_rect(center=(screen_width / 2, 450))
-    center_text_4 = p.render("press \"m\" to toggle audio", True, white)
+    center_text_4 = p.render("press \"m\" to toggle music", True, white)
     center_text_4_rect = center_text_4.get_rect(center=(screen_width / 2, 490))
-    center_text_5 = p.render("triple tap \"esc\" to quit match", True, white)
+    center_text_5 = p.render("double tap \"esc\" to quit match", True, white)
     center_text_5_rect = center_text_5.get_rect(center=(screen_width / 2, 530))
     center_text_6 = p.render("have fun", True, white)
     center_text_6_rect = center_text_6.get_rect(center=(screen_width / 2, 570))
@@ -122,6 +136,25 @@ def Main_Menu():
                 if event.button == 1:
                     if start_button.collidepoint(event.pos):
                         Game()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_m:
+                    if music_paused:
+                        pygame.mixer.music.unpause()
+                        music_paused = False
+                    else:
+                        music_paused = True
+                        pygame.mixer.music.pause()
+            
+
+        #time based audio
+        time = pygame.time.get_ticks() - start_time
+        if time in [3800, 3801, 3802, 3803, 3804, 3805]:
+            press_start.play()
+        time_since_last_reminder += dt
+        if time_since_last_reminder > 48000:
+            press_start.play()
+            time_since_last_reminder = 0
+            
 
         #draw frame
         screen.fill(grey)
@@ -150,16 +183,25 @@ def Main_Menu():
 
         #render frame
         pygame.display.flip()
-        clock.tick(tick_rate)
+        dt = clock.tick(tick_rate)
 
 def Game():
-    global ball_velocity_x, ball_velocity_y
+    global music_paused, ball_velocity_x, ball_velocity_y, counter, timer_text, played_chime_before
     game = True
     pygame.mixer.music.set_volume(0.05)
 
     #score init
     left_player_score = 0
     right_player_score = 0
+
+    #timers init
+    time_since_last_collision = 0
+    dt = 0
+    counter = 3
+    pygame.time.set_timer(pygame.USEREVENT, 1000)
+    timer_text = "3"
+    played_chime_before = False
+    escape_timer = 0
 
     #objects init
     ball = pygame.image.load("assets/sprites/miller.png") #pygame.Rect(screen_width / 2 - 15, screen_height / 15 - 12, 30, 30)
@@ -187,10 +229,13 @@ def Game():
     right_player_velocity_y = 0
 
     def resetBall():
-        global ball_velocity_x, ball_velocity_y
+        global ball_velocity_x, ball_velocity_y, counter, timer_text, played_chime_before
         ball_rect.center = (screen_width / 2, screen_height / 2)
-        ball_velocity_x = random.choice([3, -3])
-        ball_velocity_y = random.choice([3, -3])
+        ball_velocity_x = random.choice([3, -3, 4, -4, 2.4, -2.4])
+        ball_velocity_y = random.choice([3, -3, 4, -4, 5, -5, 0])
+
+        left_player.top = (screen_height / 2 -  57)
+        right_player.top = (screen_height / 2 -  57)
 
     #game loop
     while game:
@@ -208,6 +253,19 @@ def Game():
                     right_player_velocity_y -= 4.7
                 if event.key == pygame.K_SEMICOLON:
                     right_player_velocity_y += 4.7
+                if event.key == pygame.K_m:
+                    if music_paused:
+                        pygame.mixer.music.unpause()
+                        music_paused = False
+                    else:
+                        music_paused = True
+                        pygame.mixer.music.pause()
+                if event.key == pygame.K_ESCAPE:
+                    if escape_timer == 0:
+                        escape_timer = 0.001
+                    elif escape_timer < 1100:
+                        pygame.mixer.pause()
+                        Main_Menu()
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_q:
                     left_player_velocity_y += 4.7
@@ -217,53 +275,76 @@ def Game():
                     right_player_velocity_y += 4.7
                 if event.key == pygame.K_SEMICOLON:
                     right_player_velocity_y -= 4.7
+            if event.type == pygame.USEREVENT:
+                counter -= 1
+                timer_text = str(counter)
 
+        if counter <= 0:
 
-        #apply player velocities
-        left_player.y += left_player_velocity_y
-        right_player.y += right_player_velocity_y
+            #apply player velocities
+            left_player.y += left_player_velocity_y
+            right_player.y += right_player_velocity_y
 
-        #check and enforce player collisions
-        if left_player.top <= 0:
-            left_player.top = 0
-        if left_player.bottom >= screen_height:
-            left_player.bottom = screen_height
-        if right_player.top <= 0:
-            right_player.top = 0
-        if right_player.bottom >= screen_height:
-            right_player.bottom = screen_height
+            #check and enforce player collisions
+            if left_player.top <= 0:
+                left_player.top = 0
+            if left_player.bottom >= screen_height:
+                left_player.bottom = screen_height
+            if right_player.top <= 0:
+                right_player.top = 0
+            if right_player.bottom >= screen_height:
+                right_player.bottom = screen_height
 
-        #apply ball velocities
-        ball_rect.x += ball_velocity_x
-        ball_rect.y += ball_velocity_y
+            #apply ball velocities
+            ball_rect.x += ball_velocity_x
+            ball_rect.y += ball_velocity_y
 
-        #check and enforce ball collisions
-        if ball_rect.top <= 0 or ball_rect.bottom >= screen_height:
-            ball_velocity_y *= -1
-            if ball_velocity_y > 0:
-                clank.play()
-            else:
-                hiclank.play()
-        if ball_rect.left <= 0:
-            right_player_score += 1
-            random.choice([cash, groan, mariup, mcup, pokeup]).play()
-            resetBall()
-        if ball_rect.right >= screen_width:
-            left_player_score += 1
-            random.choice([cash, groan, mariup, mcup, pokeup]).play()
-            resetBall()
-        if ball_rect.colliderect(left_player) or ball_rect.colliderect(right_player):
-            random.choice([mario_1, mario_2, mario_3, mario_4, mario_5, mario_6]).play()
-            ball_velocity_x *= -1 * random.choice([1.03, .98, .91, 1.14, 1.02, 1.16, .914, 1.13, 1.24])
-            ball_velocity_y = 3 + random.choice([1, 2, 3, 4, 5])
+            time_since_last_collision += dt
 
-        #update score counters
-        right_score_value = p.render(str(right_player_score), True, white)
-        left_score_value = p.render(str(left_player_score), True, white)
+            #check and enforce ball collisions
+            if ball_rect.top <= 0 or ball_rect.bottom >= screen_height:
+                ball_velocity_y *= -1
+                if ball_velocity_y > 0:
+                    clank.play()
+                else:
+                    hiclank.play()
+            if ball_rect.left <= 0:
+                right_player_score += 1
+                random.choice([cash, groan, mariup, mcup, pokeup]).play()
+                resetBall()
+            if ball_rect.right >= screen_width:
+                left_player_score += 1
+                random.choice([cash, groan, mariup, mcup, pokeup]).play()
+                resetBall()
+            if ball_rect.colliderect(left_player) or ball_rect.colliderect(right_player):
+                #check timers
+                if time_since_last_collision > 250: #this conditional fixes supercharged shot bug
+                    time_since_last_collision = 0
+                    random.choice([mario_1, mario_2, mario_3, mario_4, mario_5, mario_6]).play()
+                    ball_velocity_x *= -1 * random.choice([1.03, .98, .91, 1.14, 1.02, 1.16, .914, 1.13, 1.24])
+                    ball_velocity_y = 3 + random.choice([1, 2, 3, 4, 5, 0])
+                else:
+                    pass
+
+            #update score counters
+            right_score_value = p.render(str(right_player_score), True, white)
+            left_score_value = p.render(str(left_player_score), True, white)
+
+        #increment escape key timer
+        if not escape_timer == 0:
+            escape_timer += dt
+            if escape_timer > 1100:
+                escape_timer = 0
 
         #draw frame
         screen.fill(grey)
-
+        if counter > 0:
+            if counter == 3 and played_chime_before == False:
+                played_chime_before = True
+                countdown_chime.play()
+            countdown = huge.render(timer_text, True, white)
+            countdown_rect = countdown.get_rect(center=(screen_width / 2, 110))
+            screen.blit(countdown, countdown_rect)
         screen.blit(left_score_label, left_score_label_rect)
         screen.blit(left_score_value, left_score_value_rect)
         screen.blit(right_score_label, right_score_label_rect)
@@ -276,6 +357,5 @@ def Game():
 
         #render frame
         pygame.display.flip()
-        clock.tick(tick_rate)
-
+        dt = clock.tick(tick_rate)
 Main_Menu()
