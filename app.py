@@ -53,6 +53,8 @@ hiclank = pygame.mixer.Sound("assets/sfx/hiclank.wav")
 hiclank.set_volume(0.12)
 countdown_chime = pygame.mixer.Sound("assets/sfx/321.wav")
 countdown_chime.set_volume(0.03)
+vicroy = pygame.mixer.Sound("assets/sfx/vicroy.wav")
+vicroy.set_volume(0.22)
 
 music_paused = False
 
@@ -121,14 +123,14 @@ def Main_Menu():
     center_text_1_rect = center_text_1.get_rect(center=(screen_width / 2, 370))
     center_text_2 = p.render("first to 7 wins", True, white)
     center_text_2_rect = center_text_2.get_rect(center=(screen_width / 2, 410))
-    center_text_3 = p.render("both players hit their up buttons to start next point", True, white)
+    center_text_3 = p.render("press \"m\" to toggle music", True, white)
     center_text_3_rect = center_text_3.get_rect(center=(screen_width / 2, 450))
-    center_text_4 = p.render("press \"m\" to toggle music", True, white)
+    center_text_4 = p.render("double tap \"esc\" to quit match", True, white)
     center_text_4_rect = center_text_4.get_rect(center=(screen_width / 2, 490))
-    center_text_5 = p.render("double tap \"esc\" to quit match", True, white)
+    center_text_5 = p.render("have fun", True, white)
     center_text_5_rect = center_text_5.get_rect(center=(screen_width / 2, 530))
-    center_text_6 = p.render("have fun", True, white)
-    center_text_6_rect = center_text_6.get_rect(center=(screen_width / 2, 570))
+    # center_text_6 = p.render("", True, white)
+    # center_text_6_rect = center_text_6.get_rect(center=(screen_width / 2, 570))
 
     #main menu loop
     while 1:
@@ -184,14 +186,14 @@ def Main_Menu():
         screen.blit(center_text_3, center_text_3_rect)
         screen.blit(center_text_4, center_text_4_rect)
         screen.blit(center_text_5, center_text_5_rect)
-        screen.blit(center_text_6, center_text_6_rect)
+        # screen.blit(center_text_6, center_text_6_rect)
 
         #render frame
         pygame.display.flip()
         dt = clock.tick(tick_rate)
 
 def Game():
-    global music_paused, ball_velocity_x, ball_velocity_y, counter, timer_text, played_chime_before
+    global music_paused, ball_velocity_x, ball_velocity_y, counter, timer_text, played_chime_before, reset_frame
     game = True
     pygame.mixer.music.set_volume(0.05)
 
@@ -233,14 +235,19 @@ def Game():
     left_player_velocity_y = 0
     right_player_velocity_y = 0
 
+
+    #reset init
+    reset_frame = False
+
     def resetBall():
-        global ball_velocity_x, ball_velocity_y, counter, timer_text, played_chime_before
+        global ball_velocity_x, ball_velocity_y, counter, timer_text, played_chime_before, reset_frame
         ball_rect.center = (screen_width / 2, screen_height / 2)
         ball_velocity_x = random.choice([3, -3, 4, -4, 2.4, -2.4])
         ball_velocity_y = random.choice([3, -3, 4, -4, 5, -5, 0])
 
         left_player.top = (screen_height / 2 -  57)
         right_player.top = (screen_height / 2 -  57)
+        reset_frame = True
 
     #game loop
     while game:
@@ -249,10 +256,14 @@ def Game():
         if left_player_score >= 7:
             global player_1_wins
             player_1_wins += 1
+            #play victory royale audio
+            vicroy.play()
             Winner(True)
         if right_player_score >= 7:
             global player_2_wins
             player_2_wins += 1
+            #play victory royale audio
+            vicroy.play()
             Winner(False)
 
         #user input
@@ -375,6 +386,11 @@ def Game():
         pygame.display.flip()
         dt = clock.tick(tick_rate)
 
+        if reset_frame:
+            pygame.time.wait(500)
+            reset_frame = False
+            
+
 def Winner(blueWon):
     global music_paused, player_1_wins, player_2_wins
     winner = True
@@ -406,7 +422,6 @@ def Winner(blueWon):
 
     wins_text_2 = p.render("player 2 has won " + str(player_2_wins) + " games this session", True, grey)
     wins_text_2_rect = wins_text_2.get_rect(center=(screen_width / 2, 480))
-
 
     #main menu loop
     while winner:
@@ -456,5 +471,4 @@ def Winner(blueWon):
         pygame.display.flip()
         dt = clock.tick(tick_rate)
 
-Winner(True)
 Main_Menu()
