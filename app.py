@@ -32,6 +32,19 @@ mario_5.set_volume(0.07)
 mario_6 = pygame.mixer.Sound("assets/sfx/mario_yahoo.wav")
 mario_6.set_volume(0.07)
 press_start = pygame.mixer.Sound("assets/sfx/press_start.wav")
+press_start.set_volume(0.07)
+cash = pygame.mixer.Sound("assets/sfx/cash.wav")
+cash.set_volume(0.07)
+groan = pygame.mixer.Sound("assets/sfx/groan.wav")
+groan.set_volume(0.07)
+mariup = pygame.mixer.Sound("assets/sfx/mariup.wav")
+mariup.set_volume(0.07)
+mcup = pygame.mixer.Sound("assets/sfx/mcup.wav")
+mcup.set_volume(0.07)
+pokeup = pygame.mixer.Sound("assets/sfx/pokeup.wav")
+pokeup.set_volume(0.07)
+clank = pygame.mixer.Sound("assets/sfx/clank.wav")
+clank.set_volume(0.12)
 
 #color init
 grey = pygame.Color(22, 22, 22)
@@ -85,7 +98,7 @@ def Main_Menu():
 
     center_text_1 = p.render("gameplay:", True, white)
     center_text_1_rect = center_text_1.get_rect(center=(screen_width / 2, 370))
-    center_text_2 = p.render("first to 5 wins", True, white)
+    center_text_2 = p.render("first to 7 wins", True, white)
     center_text_2_rect = center_text_2.get_rect(center=(screen_width / 2, 410))
     center_text_3 = p.render("both players hit their up buttons to start next point", True, white)
     center_text_3_rect = center_text_3.get_rect(center=(screen_width / 2, 450))
@@ -225,11 +238,14 @@ def Game():
         #check and enforce ball collisions
         if ball_rect.top <= 0 or ball_rect.bottom >= screen_height:
             ball_velocity_y *= -1
+            clank.play()
         if ball_rect.left <= 0:
             right_player_score += 1
+            random.choice([cash, groan, mariup, mcup, pokeup]).play()
             resetBall()
         if ball_rect.right >= screen_width:
             left_player_score += 1
+            random.choice([cash, groan, mariup, mcup, pokeup]).play()
             resetBall()
         if ball_rect.colliderect(left_player) or ball_rect.colliderect(right_player):
             random.choice([mario_1, mario_2, mario_3, mario_4, mario_5, mario_6]).play()
