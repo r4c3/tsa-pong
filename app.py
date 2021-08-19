@@ -24,37 +24,37 @@ p = pygame.font.Font("assets/ebm.ttf", 42)
 
 #sfx init
 mario_1 = pygame.mixer.Sound("assets/sfx/mario_ueh.wav")
-mario_1.set_volume(0.07)
+mario_1.set_volume(0.3)
 mario_2 = pygame.mixer.Sound("assets/sfx/mario_uhn.wav")
-mario_2.set_volume(0.07)
+mario_2.set_volume(0.3)
 mario_3 = pygame.mixer.Sound("assets/sfx/mario_wah.wav")
-mario_3.set_volume(0.07)
+mario_3.set_volume(0.3)
 mario_4 = pygame.mixer.Sound("assets/sfx/mario_yah.wav")
-mario_4.set_volume(0.07)
+mario_4.set_volume(0.3)
 mario_5 = pygame.mixer.Sound("assets/sfx/mario_yahh.wav")
-mario_5.set_volume(0.07)
+mario_5.set_volume(0.3)
 mario_6 = pygame.mixer.Sound("assets/sfx/mario_yahoo.wav")
-mario_6.set_volume(0.07)
+mario_6.set_volume(0.3)
 press_start = pygame.mixer.Sound("assets/sfx/press_start.wav")
-press_start.set_volume(0.07)
+press_start.set_volume(0.3)
 cash = pygame.mixer.Sound("assets/sfx/cash.wav")
-cash.set_volume(0.07)
+cash.set_volume(0.3)
 groan = pygame.mixer.Sound("assets/sfx/groan.wav")
-groan.set_volume(0.07)
+groan.set_volume(0.3)
 mariup = pygame.mixer.Sound("assets/sfx/mariup.wav")
-mariup.set_volume(0.07)
+mariup.set_volume(0.3)
 mcup = pygame.mixer.Sound("assets/sfx/mcup.wav")
-mcup.set_volume(0.07)
+mcup.set_volume(0.3)
 pokeup = pygame.mixer.Sound("assets/sfx/pokeup.wav")
-pokeup.set_volume(0.07)
+pokeup.set_volume(0.3)
 clank = pygame.mixer.Sound("assets/sfx/clank.wav")
 clank.set_volume(0.12)
 hiclank = pygame.mixer.Sound("assets/sfx/hiclank.wav")
-hiclank.set_volume(0.12)
+hiclank.set_volume(0.22)
 countdown_chime = pygame.mixer.Sound("assets/sfx/321.wav")
-countdown_chime.set_volume(0.03)
+countdown_chime.set_volume(0.1)
 vicroy = pygame.mixer.Sound("assets/sfx/vicroy.wav")
-vicroy.set_volume(0.22)
+vicroy.set_volume(0.32)
 
 music_paused = False
 
@@ -79,7 +79,7 @@ def Main_Menu():
     song_number = random.randint(0, len(songs) - 1)
     random.shuffle(songs)
     pygame.mixer.music.load("assets/music/" + songs[song_number])
-    pygame.mixer.music.set_volume(0.1)
+    pygame.mixer.music.set_volume(0.55)
     pygame.mixer.music.play(1)
     for index, song in enumerate(songs):
         if index == song_number:
@@ -102,7 +102,7 @@ def Main_Menu():
 
     start_button = pygame.Rect(screen_width / 2 - 210, screen_height - 80 - 65, 420, 90)
 
-    start_text = h3.render("START GAME", True, red)
+    start_text = h3.render("PRESS SPACE", True, red)
     start_text_rect = start_text.get_rect(center=(screen_width / 2, screen_height - 80 - 20))
 
     left_text_1 = p.render("player 1 (left):", True, blue)
@@ -121,14 +121,16 @@ def Main_Menu():
 
     center_text_1 = p.render("gameplay:", True, white)
     center_text_1_rect = center_text_1.get_rect(center=(screen_width / 2, 370))
-    center_text_2 = p.render("first to 7 wins", True, white)
+    center_text_2 = p.render("first to 4 wins", True, white)
     center_text_2_rect = center_text_2.get_rect(center=(screen_width / 2, 410))
     center_text_3 = p.render("press \"m\" to toggle music", True, white)
     center_text_3_rect = center_text_3.get_rect(center=(screen_width / 2, 450))
     center_text_4 = p.render("double tap \"esc\" to quit match", True, white)
     center_text_4_rect = center_text_4.get_rect(center=(screen_width / 2, 490))
-    center_text_5 = p.render("have fun", True, white)
+    center_text_5 = p.render("press \"space\" to start", True, white)
     center_text_5_rect = center_text_5.get_rect(center=(screen_width / 2, 530))
+    center_text_6 = p.render("have fun", True, white)
+    center_text_6_rect = center_text_6.get_rect(center=(screen_width / 2, 570))
     # center_text_6 = p.render("", True, white)
     # center_text_6_rect = center_text_6.get_rect(center=(screen_width / 2, 570))
 
@@ -151,6 +153,8 @@ def Main_Menu():
                     else:
                         music_paused = True
                         pygame.mixer.music.pause()
+                if event.key == pygame.K_SPACE:
+                    Game()
             
 
         #time based audio
@@ -186,7 +190,7 @@ def Main_Menu():
         screen.blit(center_text_3, center_text_3_rect)
         screen.blit(center_text_4, center_text_4_rect)
         screen.blit(center_text_5, center_text_5_rect)
-        # screen.blit(center_text_6, center_text_6_rect)
+        screen.blit(center_text_6, center_text_6_rect)
 
         #render frame
         pygame.display.flip()
@@ -253,13 +257,13 @@ def Game():
     while game:
 
         #win conditions
-        if left_player_score >= 7:
+        if left_player_score >= 4:
             global player_1_wins
             player_1_wins += 1
             #play victory royale audio
             vicroy.play()
             Winner(True)
-        if right_player_score >= 7:
+        if right_player_score >= 4:
             global player_2_wins
             player_2_wins += 1
             #play victory royale audio
